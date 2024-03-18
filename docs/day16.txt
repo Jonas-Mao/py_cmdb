@@ -1,0 +1,66 @@
+manage.py@cmdb > startapp resources
+
+manage.py@cmdb > makemigrations resources
+manage.py@cmdb > migrate resources
+
+mysql> insert into resources_serveruser value(1,'超级管理员','root','123456','root用户权权限');
+
+mysql> select * from resources_serveruser;
++----+-----------------+----------+----------+------------------+
+| id | name            | username | password | info             |
++----+-----------------+----------+----------+------------------+
+|  1 | 超级管理员      | root     | 123456   | root用户权限     |
++----+-----------------+----------+----------+------------------+
+
+---------------------------------------------------------------------------------------------------------
+#/bin/bash
+yum install -y openssl-devel bzip2-devel expat-devel gdbm-devel readline-devel sqlite-devel libffi-devel
+
+#openssl升级
+wget https://www.openssl.org/source/openssl-1.1.1b.tar.gz
+tar xvf openssl-OpenSSL_1_1_1b.tar.gz
+cd openssl-1.1.1b
+./config --prefix=/usr/local/openssl && make && make install
+echo "/usr/local/openssl/lib" >> /etc/ld.so.conf.d/openssl.conf
+ldconfig
+#echo "export PATH=/usr/local/openssl/bin:$PATH" >> /etc/profile
+echo "export LD_LIBRARY_PATH=/usr/local/openssl/lib:\$LD_LIBRARY_PATH" >> /etc/profile
+source /etc/profile
+
+验证ssh版本
+python3 -c "import ssl; print(ssl.OPENSSL_VERSION)"
+
+cd ../
+if [ ! -f ./Python-3.7.3.tgz ];then
+    echo "本地没有Python源码包，正在远程下载中，请耐心等待...\n"
+    wget https://www.python.org/ftp/python/3.7.3/Python-3.7.3.tgz
+fi
+tar xvf Python-3.7.3.tgz
+cd Python-3.7.3
+./configure --prefix=/usr/local/python3 --with-ssl=/usr/local/openssl/lib && make && make install
+echo 'PATH=/usr/local/python3/bin:$PATH' >> /etc/profile
+source /etc/profile
+---------------------------------------------------------------------------------------------------------
+
+# python3--version
+# pip3 --version
+
+配置pip国内源
+mkdir .pip
+cd .pip
+vim pip.conf
+[global]
+index-url = http://pypi.douban.com/simple/
+[install]
+trusted-host = pypi.douban.com
+
+
+$ python
+>>> import distro
+>>> distro.name(pretty=True)
+'CentOS Linux 8'
+>>> distro.id()
+'centos'
+>>> distro.version(best=True)
+'8.4.2105'
+

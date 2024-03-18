@@ -1,0 +1,141 @@
+{% extends 'dashboard/templates/base.html' %}
+{% block load_css %}
+    <link href="/static/css/plugins/sweetalert/sweetalert.css" rel="stylesheet">
+{% endblock %}
+{% block mbx %}
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-sm-4">
+            <h2>用户展示</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="{% url 'index' %}">首页</a>
+                </li>
+                <li>
+                    <a href="">用户管理</a>
+                </li>
+                <li>
+                    <a href="">用户展示</a>
+                </li>
+            </ol>
+        </div>
+    </div>
+{% endblock %}
+{% block body %}
+    {% if perms.users.user_add %}
+        <a type="button" class="btn btn-info" href="{% url 'user_add' %}">添加用户</a>
+    {% endif %}
+    <div class="col-lg-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>用户展示 </h5>
+            </div>
+            <div class="ibox-content">
+
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th class="text-center">用户名</th>
+                        <th class="text-center">邮箱</th>
+                        <th class="text-center">微信</th>
+                        <th class="text-center">中文名</th>
+                        <th class="text-center">电话</th>
+                        <th class="text-center">激活状态</th>
+                        <th class="text-center">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+{#                    {% for one in data %}#}
+                    {% for one in object_list %}
+                    <tr>
+                        <td class="text-center">{{ one.username }}</td>
+                        <td class="text-center">{{ one.email }}</td>
+                        <td class="text-center">{{ one.profile.wechat }}</td>
+                        <td class="text-center">{{ one.profile.name_cn }}</td>
+                        <td class="text-center">{{ one.profile.phone }}</td>
+                        {% if one.is_active == 1 %}
+                            <td class="text-center"><i class="fa fa-circle text-navy"></i></td>
+                        {% else %}
+                            <td class="text-center"><i class="fa fa-circle text-danger"></i></td>
+                        {% endif %}
+                        <td class="text-center">
+                            <a type="button" class="btn btn-primary btn-sm" href="{% url 'user_update' %}?id={{ one.id }}">更新</a>
+                            <a type="button" class="btn btn-danger btn-sm" onclick="user_delete({{ one.id }})">删除</a>
+                            {% if one.is_active == 1 %}
+                                <a type="button" class="btn btn-warning btn-sm" onclick="user_status({{ one.id }})">禁用</a>
+                            {% else %}
+                                <a type="button" class="btn btn-success btn-sm" onclick="user_status({{ one.id }})">启用</a>
+                            {% endif %}
+                            <a type="button" class="btn btn-info btn-sm" href="{% url 'user_set_perm' %}?id={{ one.id }}">权限</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+                <center>
+                <div class="btn-group">
+                {% if page_obj.has_previous %}
+                    <a type="button" class="btn btn-white" href="{% url 'user_list' %}?page={{ page_obj.previous_page_number }}"><i class="fa fa-chevron-left"></i> </a>
+                {% endif %}
+                    {% for page in page_range %}
+                        {% if page_obj.number == page %}
+                            <a class="btn btn-white active" href="{% url 'user_list' %}?page={{ page }}">{{ page }}</a>
+                        {% else %}
+                            <a class="btn btn-white" href="{% url 'user_list' %}?page={{ page }}">{{ page }}</a>
+                        {% endif %}
+                    {% endfor %}
+                {% if page_obj.has_next %}
+                    <a type="button" class="btn btn-white" href="{% url 'user_list' %}?page={{ page_obj.next_page_number }}"><i class="fa fa-chevron-right"></i> </a>
+                {% endif %}
+                </div>
+                </center>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block load_js %}
+    <script src="/static/js/plugins/sweetalert/sweetalert.min.js"></script>
+    <script>
+        function user_delete(id){
+            if (confirm('确认删除用户吗？')){
+                $.get("{% url 'user_delete' %}?id=" + id, function (data){
+                    if (data.status == 0){
+                        swal({
+                            title: data.msg,
+                            type: "success",
+                            confirmButtonText: '确定'
+                        }, function() {
+                            window.location.reload();
+                        });
+                    } else {
+                        swal("删除失败", {
+                            icon: "error",
+                        });
+                    }
+                });
+            }
+        }
+
+        function user_status(id){
+                $.get("{% url 'user_status' %}?id=" + id, function (data){
+                    if (data.status == 0){
+                        swal({
+                            title: data.msg,
+                            type: "success",
+                            confirmButtonText: '确定'
+                        }, function() {
+                            window.location.reload();
+                        });
+                    } else {
+                        swal({
+                            title: data.msg,
+                            type: 'error',
+                            confirmButtonText: "确定"
+                        }, function () {
+                    });
+                    }
+                });
+        }
+    </script>
+{% endblock %}
